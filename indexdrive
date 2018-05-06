@@ -1,0 +1,53 @@
+#!/bin/bash
+
+sStartDir="$(pwd)"
+sDir=""
+sTemp="/tmp/tempindex.txt"
+sIndex="/tmp/index.csv"
+sDiskname=""
+
+sFile=""
+sSize=""
+sType=""
+
+echo -n "Directory to be indexed > "
+read sDir
+echo -n "Disk search phrase(for grep df -h) > "
+read sDiskname
+
+if [ -d "${sDir}" ]; then
+    echo "${sDir} exists"
+else
+    echo "${sDir} does not exist. Error."
+    exit 1
+fi
+
+# Get list of files on drive
+cd "${sDir}"
+find . -type f > ${sTemp}
+
+# Print space available
+echo "$(df -h | grep ${sDiskname})" > ${sIndex}
+echo "" >> ${sIndex}
+
+# Print headers
+echo "Filename;Size;Type" >> ${sIndex}
+
+# Loop through list
+while read line; do
+    echo -n "Processing ${sFile}..."
+    sFile="${line}"
+    sSize=$(ls -lah "${sFile}" | cut -d" " -f 5)
+    sType=$(file -b "${sFile}")
+    echo "${sFile};${sSize};${sType};${sSum}" >> ${sIndex}
+    echo "done"
+done < "${sTemp}"
+
+# Tidy up
+rm -rv ${sTemp}
+cd "$sStartDir"
+
+# Graceful exit
+exit 0
+
+
